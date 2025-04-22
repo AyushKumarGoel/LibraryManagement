@@ -10,7 +10,8 @@ public class UserController {
     }
 
     public boolean authenticate(String cardId) {
-        return userSource.authenticate(cardId);
+        if(userSource.authenticateUser(cardId) !=-1)    return true;
+        return false;
     }
 
     public void viewBooks() {

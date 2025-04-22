@@ -3,11 +3,11 @@ package entity;
 public class User {
     public int id;
     public String name;
-    public String libraryCardId;
+    public String libraryCard; // Used for authentication
 
-    public User(int id, String name, String libraryCardId) {
+    public User(int id, String name, String libraryCard) {
         this.id = id;
         this.name = name;
-        this.libraryCardId = libraryCardId;
+        this.libraryCard = libraryCard;
     }
 }

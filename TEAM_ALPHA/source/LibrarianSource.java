@@ -17,20 +17,24 @@ public class LibrarianSource {
 
     public void manageUsers() {
         for (User user : LibraryDatabase.users) {
-            System.out.println("User ID: " + user.id + ", Name: " + user.name + ", Card ID: " + user.libraryCardId);
+            System.out.println("User ID: " + user.id + ", Name: " + user.name);
         }
     }
 
     public void viewAllTransactions() {
         for (Transaction t : LibraryDatabase.transactions) {
-            System.out.println("User ID: " + t.userId + ", Book ID: " + t.bookId + ", Action: " + t.action + ", Date: " + t.date + ", Fine: Rs." + t.fine);
+            System.out.println("User ID: " + t.userId + ", Book ID: " + t.bookId + ", Action: " + t.action + ", Date: " + t.date + ", Fine: ₹" + t.fine);
         }
     }
 
     public String generateLibraryCard() {
-        String cardId = UUID.randomUUID().toString();
-        LibraryDatabase.issuedCards.add(cardId);
-        System.out.println("Generated Library Card ID: " + cardId);
-        return cardId;
+        return UUID.randomUUID().toString();
     }
+    public void viewAllBooks() {
+        for (Book b : LibraryDatabase.books) {
+            String status = b.isAvailable ? "Available" : "Borrowed";
+            System.out.println("Book ID: " + b.id + ", Title: " + b.title + ", Author: " + b.author + ", Status: " + status);
+        }
+    }
+    
 }

@@ -10,22 +10,9 @@ import java.util.Scanner;
 public class UserSource {
     Scanner sc = new Scanner(System.in);
 
-    public void registerUser(int id, String name, String cardId) {
-        if (!LibraryDatabase.issuedCards.contains(cardId)) {
-            System.out.println("Invalid or unauthorized library card.");
-            return;
-        }
-        LibraryDatabase.users.add(new User(id, name, cardId));
+    public void registerUser(int id, String name, String libraryCard) {
+        LibraryDatabase.users.add(new User(id, name, libraryCard));
         System.out.println("User registered: " + name);
-    }
-
-    public boolean authenticate(String cardId) {
-        for (User u : LibraryDatabase.users) {
-            if (u.libraryCardId.equals(cardId)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public void viewAvailableBooks() {
@@ -37,6 +24,31 @@ public class UserSource {
     }
 
     public void borrowBook(int userId, int bookId) {
+        int activeBorrows = 0;
+        double pendingFines = 0;
+
+        for (Transaction t : LibraryDatabase.transactions) {
+            if (t.userId == userId) {
+                if (t.action.equals("BORROWED")) {
+                    boolean returned = LibraryDatabase.transactions.stream()
+                        .anyMatch(ret -> ret.userId == userId && ret.bookId == t.bookId && ret.action.equals("RETURNED"));
+                    if (!returned) activeBorrows++;
+                } else if (t.action.equals("RETURNED")) {
+                    pendingFines += t.fine;
+                }
+            }
+        }
+
+        if (pendingFines > 0) {
+            System.out.println("Cannot borrow. Please clear fine of ₹" + pendingFines + " first.");
+            return;
+        }
+
+        if (activeBorrows >= 3) {
+            System.out.println("Borrow limit reached (3 books). Please return a book first.");
+            return;
+        }
+
         for (Book book : LibraryDatabase.books) {
             if (book.id == bookId && book.isAvailable) {
                 book.isAvailable = false;
@@ -83,5 +95,14 @@ public class UserSource {
 
         LibraryDatabase.transactions.add(new Transaction(userId, bookId, "RETURNED", returnDate, fine));
         System.out.println("Book returned on " + returnDate + ". Fine: Rs." + fine);
+    }
+
+    public int authenticateUser(String libraryCard) {
+        for (User user : LibraryDatabase.users) {
+            if (user.libraryCard.equals(libraryCard)) {
+                return user.id;
+            }
+        }
+        return -1;
     }
 }
