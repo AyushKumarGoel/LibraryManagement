@@ -3,17 +3,21 @@ package controller;
 import source.UserSource;
 
 public class UserController {
-    private final UserSource userSource = new UserSource();
+    UserSource userSource = new UserSource();
 
-    public void registerUser(String name) {
-        userSource.registerUser(name);
+    public void registerUser(int id, String name, String cardId) {
+        userSource.registerUser(id, name, cardId);
+    }
+
+    public boolean authenticate(String cardId) {
+        return userSource.authenticate(cardId);
     }
 
     public void viewBooks() {
         userSource.viewAvailableBooks();
     }
 
-    public void borrowBook(int userId, int bookId) {
+    public void borrow(int userId, int bookId) {
         userSource.borrowBook(userId, bookId);
     }
 

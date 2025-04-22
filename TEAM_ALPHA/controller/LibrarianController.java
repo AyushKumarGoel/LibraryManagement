@@ -3,14 +3,14 @@ package controller;
 import source.LibrarianSource;
 
 public class LibrarianController {
-    private final LibrarianSource librarianSource = new LibrarianSource();
+    LibrarianSource librarianSource = new LibrarianSource();
 
-    public void addBook(String title, String author) {
-        librarianSource.addBook(title, author);
+    public void addBook(int id, String title, String author) {
+        librarianSource.addBook(id, title, author);
     }
 
-    public void removeBook(int bookId) {
-        librarianSource.removeBook(bookId);
+    public void removeBook(int id) {
+        librarianSource.removeBook(id);
     }
 
     public void manageUsers() {
@@ -18,6 +18,10 @@ public class LibrarianController {
     }
 
     public void viewTransactions() {
-        librarianSource.viewTransactions();
+        librarianSource.viewAllTransactions();
+    }
+
+    public String generateCard() {
+        return librarianSource.generateLibraryCard();
     }
 }
