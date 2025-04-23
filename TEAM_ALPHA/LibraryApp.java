@@ -1,103 +1,199 @@
-import controller.*;
+import controller.LibrarianController;
+import controller.UserController;
 import database.LibraryDatabase;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 import source.LibrarianSource;
 import source.UserSource;
 
 public class LibraryApp {
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final UserSource userSource = new UserSource();
+    private static final LibrarianSource librarianSource = new LibrarianSource();
+    private static final UserController userController = new UserController();
+    private static final LibrarianController librarianController = new LibrarianController();
+
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        UserController userController = new UserController();
-        LibrarianController librarianController = new LibrarianController();
-        UserSource userSource = new UserSource();
-        LibrarianSource librarianSource = new LibrarianSource();
-    
-        while (true) { // Wrap entire role-selection in a loop
-            System.out.print("Enter role (user/librarian): ");
-            String role = sc.nextLine();
-    
-            if (role.equalsIgnoreCase("librarian")) {
-                System.out.print("Enter librarian password: ");
-                String password = sc.nextLine();
-                if (!password.equals(LibraryDatabase.librarianPassword)) {
-                    System.out.println("Authentication failed!");
-                    continue;
-                }
-                while (true) {
-                    System.out.println("\n1. Add Book\n2. Remove Book\n3. Manage Users\n4. View Transactions\n5. Generate Library Card\n6. Register User\n7. Exit");    
-                    System.out.print("Choose option: ");
-                    int opt = Integer.parseInt(sc.nextLine());
-    
-                    switch (opt) {
-                        case 1 -> {
-                            System.out.print("Book ID: "); int id = Integer.parseInt(sc.nextLine());
-                            System.out.print("Title: "); String title = sc.nextLine();
-                            System.out.print("Author: "); String author = sc.nextLine();
-                            librarianController.addBook(id, title, author);
-                        }
-                        case 2 -> {
-                            System.out.print("Book ID to remove: ");
-                            librarianController.removeBook(Integer.parseInt(sc.nextLine()));
-                        }
-                        case 3 -> librarianController.manageUsers();
-                        case 4 -> librarianController.viewTransactions();
-                        case 5 -> {
-                            String card = librarianSource.generateLibraryCard();
-                            System.out.println("Generated Library Card: " + card);
-                        }
-                        case 6 -> {
-                            System.out.print("User ID: "); int userId = Integer.parseInt(sc.nextLine());
-                            System.out.print("User Name: "); String name = sc.nextLine();
-                            System.out.print("Library Card: "); String card = sc.nextLine();
-                            userSource.registerUser(userId, name, card);
-                        }
-                        case 7 -> {
-                            System.out.println("Returning to role selection...");
-                            return;
-                        }
-                        default -> System.out.println("Invalid option");
+        LibraryDatabase.librarianCredentials.put("admin", "admin123"); // Default admin
+        boolean running = true;
+        while (running) {
+            try {
+                System.out.println("\n===== Library Management System =====");
+                System.out.println("1. Register User");
+                System.out.println("2. Login as User");
+                System.out.println("3. Login as Librarian");
+                System.out.println("4. Exit");
+                System.out.print("Enter choice: ");
+
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (choice) {
+                    case 1 -> registerUser();
+                    case 2 -> loginUser();
+                    case 3 -> loginLibrarian();
+                    case 4 -> {
+                        System.out.println("Exiting... Goodbye!");
+                        running = false;
                     }
-                    
-    
-                    if (opt == 6) break;
+                    default -> System.out.println("Invalid choice. Try again.");
                 }
-            } else if (role.equalsIgnoreCase("user")) {
-                System.out.print("Enter your library card: ");
-                String card = sc.nextLine();
-                int userId = userSource.authenticateUser(card);
-                if (userId == -1) {
-                    System.out.println("Authentication failed!");
-                    continue;
-                }
-    
-                while (true) {
-                    System.out.println("\n1. View Available Books\n2. Borrow Book\n3. Return Book\n4. Back to Role Selection");
-                    System.out.print("Choose option: ");
-                    int opt = Integer.parseInt(sc.nextLine());
-    
-                    switch (opt) {
-                        case 1 -> userController.viewBooks();
-                        case 2 -> {
-                            System.out.print("Book ID: ");
-                            userController.borrow(userId, Integer.parseInt(sc.nextLine()));
-                        }
-                        case 3 -> {
-                            System.out.print("Book ID to return: ");
-                            userController.returnBook(userId, Integer.parseInt(sc.nextLine()));
-                        }
-                        case 4 -> {
-                            System.out.println("Returning to role selection...");
-                            break;
-                        }
-                        default -> System.out.println("Invalid option");
-                    }
-    
-                    if (opt == 4) break;
-                }
-            } else {
-                System.out.println("Invalid role.");
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine(); // clear the invalid input
             }
         }
     }
-    
+
+    private static void registerUser() {
+        System.out.print("Enter Name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter User ID: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+        System.out.print("Set Password: ");
+        String password = scanner.nextLine();
+        String card = librarianSource.generateLibraryCard();
+        userSource.registerUser(id, name, card, password);
+        System.out.println("User registered successfully. Your Library Card: " + card);
+    }
+
+    private static void loginUser() {
+        System.out.print("Enter Library Card: ");
+        String card = scanner.nextLine();
+        System.out.print("Enter Password: ");
+        String password = scanner.nextLine();
+
+        if (!userSource.authenticateUser(card, password)) {
+            System.out.println("Authentication failed.");
+            return;
+        }
+
+        boolean loggedIn = true;
+        while (loggedIn) {
+            try {
+                System.out.println("\n===== User Menu =====");
+                System.out.println("1. View All Books");
+                System.out.println("2. Borrow Book");
+                System.out.println("3. Return Book");
+                System.out.println("4. View Transaction History");
+                System.out.println("5. Exit");
+                System.out.println("6. Logout");
+                System.out.print("Enter choice: ");
+
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (choice) {
+                    case 1 -> userController.viewBooks();
+                    case 2 -> {
+                        System.out.print("Enter Book ID to borrow: ");
+                        int id = scanner.nextInt();
+                        try {
+                            userController.borrowBook(card, id);
+                            System.out.println("Book borrowed successfully.");
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                    case 3 -> {
+                        System.out.print("Enter Book ID to return: ");
+                        int id = scanner.nextInt();
+                        try {
+                            userController.returnBook(card, id);
+                            System.out.println("Book returned successfully.");
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                    case 4 -> userController.viewTransactions(card);
+                    case 5 -> {
+                        System.out.println("Exiting application. Goodbye!");
+                        System.exit(0);
+                    }
+                    case 6 -> {
+                        System.out.println("Logging out...");
+                        loggedIn = false;
+                    }
+                    default -> System.out.println("Invalid choice.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine();
+            }
+        }
+    }
+
+    private static void loginLibrarian() {
+        System.out.print("Enter Username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter Password: ");
+        String password = scanner.nextLine();
+
+        if (!librarianSource.authenticateLibrarian(username, password)) {
+            System.out.println("Authentication failed.");
+            return;
+        }
+
+        boolean loggedIn = true;
+        while (loggedIn) {
+            try {
+                System.out.println("\n===== Librarian Menu =====");
+                System.out.println("1. Add Book");
+                System.out.println("2. Remove Book");
+                System.out.println("3. Manage Users");
+                System.out.println("4. View All Books");
+                System.out.println("5. View All Transactions");
+                System.out.println("6. Exit Application");
+                System.out.println("9. Logout");
+                System.out.print("Enter choice: ");
+
+                int choice = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (choice) {
+                    case 1 -> {
+                        System.out.print("Enter Book ID: ");
+                        int id = scanner.nextInt();
+                        scanner.nextLine();
+                        System.out.print("Enter Book Title: ");
+                        String title = scanner.nextLine();
+                        System.out.print("Enter Author Name: ");
+                        String author = scanner.nextLine();
+                        try {
+                            librarianController.addBook(id, title, author);
+                            System.out.println("Book added successfully.");
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                    case 2 -> {
+                        System.out.print("Enter Book ID to remove: ");
+                        int id = scanner.nextInt();
+                        try {
+                            librarianController.removeBook(id);
+                            System.out.println("Book removed successfully.");
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                    case 3 -> librarianController.manageUsers();
+                    case 4 -> librarianController.viewAllBooks();
+                    case 5 -> librarianController.viewTransactions();
+                    case 6 -> {
+                        System.out.println("Exiting application. Goodbye!");
+                        System.exit(0);
+                    }
+                    case 9 -> {
+                        System.out.println("Logging out...");
+                        loggedIn = false;
+                    }
+                    default -> System.out.println("Invalid choice.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a number.");
+                scanner.nextLine();
+            }
+        }
+    }
 }

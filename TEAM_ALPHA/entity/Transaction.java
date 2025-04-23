@@ -3,17 +3,40 @@ package entity;
 import java.time.LocalDate;
 
 public class Transaction {
-    public int userId;
-    public int bookId;
-    public String action; // BORROWED or RETURNED
-    public LocalDate date;
-    public double fine;
+    private String card;
+    private int bookId;
+    private String action;
+    private LocalDate date;
+    private LocalDate dueDate;
 
-    public Transaction(int userId, int bookId, String action, LocalDate date, double fine) {
-        this.userId = userId;
+    public Transaction(String card, int bookId, String action, LocalDate date, LocalDate dueDate) {
+        this.card = card;
         this.bookId = bookId;
         this.action = action;
         this.date = date;
-        this.fine = fine;
+        this.dueDate = dueDate;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+    public LocalDate getDate(){
+        return date;
+    }
+    public String getCard() {
+        return card;
+    }
+
+    public String toString() {
+        return card + " " + action + " book ID: " + bookId + " on " + date +
+               (dueDate != null ? ", Due: " + dueDate : "");
     }
 }
